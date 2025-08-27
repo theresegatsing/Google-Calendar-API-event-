@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os, datetime, zoneinfo
+from pathlib import Path
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -7,27 +8,40 @@ from google.auth.transport.requests import Request
 
 SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
+# 1) Point to your credentials.json safely (no escape issues)
+CLIENT_PATH = Path(r"C:\Users\gatsi\Box\MY BREATHTAKING PROJECT\Voice Calendar AI\credentials.json")
+if not CLIENT_PATH.exists():
+    raise FileNotFoundError(f"credentials.json not found at: {CLIENT_PATH}")
+
+# 2) Choose a clear token location (outside your repo is fine)
+TOKEN_PATH = Path.home() / ".voice-calendar-ai" / "token.json"
+TOKEN_PATH.parent.mkdir(parents=True, exist_ok=True)
+
 def get_service():
-    creds = None                                 # 1) Start with no credentials in memory.
+    creds = None
+    print(f"🔎 Token path: {TOKEN_PATH}")
+    if TOKEN_PATH.exists():
+        print("✅ Found token.json; loading credentials…")
+        creds = Credentials.from_authorized_user_file(str(TOKEN_PATH), SCOPES)
+    else:
+        print("ℹ️ No token.json yet; first-time consent expected.")
 
-    if os.path.exists("token.json"):             # 2) If we previously authorized, a token file exists...
-        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-                                                 #    ...load tokens (access + refresh + expiry + scopes) into 'creds'.
-
-    if not creds or not creds.valid:             # 3) If we have no creds OR the loaded creds are not valid:
+    if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-                                                 # 4) If creds exist AND the access token is expired AND we have a refresh token:
-            creds.refresh(Request())             #    -> silently get a new access token via the refresh token.
+            print("🔄 Access token expired; refreshing with refresh token…")
+            creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file("C:\Users\gatsi\Box\MY BREATHTAKING PROJECT\Voice Calendar AI\credentials.json", SCOPES)
-                                                 # 5) Otherwise, kick off the OAuth flow using your client config...
-            creds = flow.run_local_server(port=0)#    ...opens a browser, you sign in & Allow, Google returns fresh tokens.
+            print(f"🌐 Launching browser for consent using {CLIENT_PATH} …")
+            flow = InstalledAppFlow.from_client_secrets_file(str(CLIENT_PATH), SCOPES)
+            # fixed port helps on Windows sometimes
+            creds = flow.run_local_server(port=8080, prompt="consent",
+                                          authorization_prompt_message="Please authorize access in your browser…")
 
-        with open("token.json", "w") as f:       # 6) Persist whatever 'creds' we now have (new or refreshed) to disk...
-            f.write(creds.to_json())             #    ...so next run can skip the browser.
+        TOKEN_PATH.write_text(creds.to_json(), encoding="utf-8")
+        print(f"💾 Saved new token to {TOKEN_PATH}")
 
+    print("🧩 Building Calendar service…")
     return build("calendar", "v3", credentials=creds)
-                                                 # 7) Build a Calendar API client bound to these creds.
 
 if __name__ == "__main__":
     service = get_service()
@@ -43,22 +57,15 @@ if __name__ == "__main__":
         "description": "Created via Google Calendar API (OAuth 2.0)",
         "start": {"dateTime": start_dt.isoformat(), "timeZone": "America/New_York"},
         "end":   {"dateTime": end_dt.isoformat(),   "timeZone": "America/New_York"},
-        # Optional examples:
-        # "attendees": [{"email": "friend@example.com"}],
-        # "location": "Library Room 2",
-        # "reminders": {"useDefault": True},
-        # "conferenceData": {"createRequest": {"requestId": "unique-id-123"}},  # adds Google Meet link
     }
 
-    print("Creating event…")
+    print("📨 Calling events.insert (POST)…")
     created = service.events().insert(
         calendarId="primary",
         body=event,
-        sendUpdates="all",            # email guests if you add attendees
-        conferenceDataVersion=1       # needed only if you included conferenceData above
+        sendUpdates="all"
+        # ← only include conferenceDataVersion if you set conferenceData in the body
     ).execute()
 
     print("✅ Event link:", created.get("htmlLink"))
     print("🆔 Event ID:", created.get("id"))
-    # If you added conferenceData:
-    # print("🔗 Meet:", created.get("hangoutLink"))
