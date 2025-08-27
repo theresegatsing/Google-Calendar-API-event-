@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # Example: tomorrow 10–11 AM America/New_York
     tz = zoneinfo.ZoneInfo("America/New_York")
     now = datetime.datetime.now(tz)
-    start_dt = (now + datetime.timedelta(days=1)).replace(hour=10, minute=0, second=0, microsecond=0)
+    start_dt = (now + datetime.timedelta(days=3)).replace(hour=3, minute=0, second=0, microsecond=0)
     end_dt   = start_dt + datetime.timedelta(hours=3)
 
     event = {
