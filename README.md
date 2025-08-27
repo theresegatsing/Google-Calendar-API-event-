@@ -4,7 +4,7 @@ Create Google Calendar events from a Python script using OAuth 2.0 user consent.
 **No secrets in Git** — keep `credentials.json` and `token.json` local.
 
 ## Demo
-**Video walkthrough:** [Watch here](./video%20Walkthrough.mp4)
+**Video walkthrough:** <img src='Walkthrough.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 ## Quick setup
 1) In Google Cloud Console: create/select a project → **Enable** “Google Calendar API”.  
