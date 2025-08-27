@@ -1,21 +1,16 @@
 # Google Calendar Event Creator (Python + OAuth 2.0)
 
 Create Google Calendar events from a Python script using OAuth 2.0 user consent.  
-No secrets are committed — `credentials.json` and `token.json` stay local (or in env vars).
+**No secrets in Git** — keep `credentials.json` and `token.json` local.
 
 ## Demo
-- **Video walkthrough:** _link-to-your-video_
-- **Creates:** timed or all-day events
-- **Optional:** Google Meet link, update, delete
+**Video walkthrough:** [Watch here](./video%20Walkthrough.mp4)
 
-## Setup
+## Quick setup
+1) In Google Cloud Console: create/select a project → **Enable** “Google Calendar API”.  
+2) **OAuth consent screen:** User type **External**, add yourself as a **Test user**.  
+3) **Credentials → OAuth client ID → Desktop app** → download `credentials.json` (don’t commit).  
 
-### 1) Google Cloud
-1. Create a project → **Enable** “Google Calendar API”.
-2. **OAuth consent screen**: User type = External, add yourself as **Test user**.
-3. **Create credentials** → OAuth client ID → **Desktop app** → download JSON.
-
-### 2) Local files (keep secrets out of Git)
-- Put the downloaded file **outside** your repo or keep it local.
-- Name it `credentials.json` or set an env var path (see below).
-- Add `.gitignore`:
+## Install
+```bash
+python -m pip install google-api-python-client google-auth-oauthlib google-auth-httplib2 tzdata
