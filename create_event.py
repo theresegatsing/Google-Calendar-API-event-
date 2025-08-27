@@ -28,3 +28,37 @@ def get_service():
 
     return build("calendar", "v3", credentials=creds)
                                                  # 7) Build a Calendar API client bound to these creds.
+
+if __name__ == "__main__":
+    service = get_service()
+
+    # Example: tomorrow 10–11 AM America/New_York
+    tz = zoneinfo.ZoneInfo("America/New_York")
+    now = datetime.datetime.now(tz)
+    start_dt = (now + datetime.timedelta(days=1)).replace(hour=10, minute=0, second=0, microsecond=0)
+    end_dt   = start_dt + datetime.timedelta(hours=1)
+
+    event = {
+        "summary": "API Demo Event",
+        "description": "Created via Google Calendar API (OAuth 2.0)",
+        "start": {"dateTime": start_dt.isoformat(), "timeZone": "America/New_York"},
+        "end":   {"dateTime": end_dt.isoformat(),   "timeZone": "America/New_York"},
+        # Optional examples:
+        # "attendees": [{"email": "friend@example.com"}],
+        # "location": "Library Room 2",
+        # "reminders": {"useDefault": True},
+        # "conferenceData": {"createRequest": {"requestId": "unique-id-123"}},  # adds Google Meet link
+    }
+
+    print("Creating event…")
+    created = service.events().insert(
+        calendarId="primary",
+        body=event,
+        sendUpdates="all",            # email guests if you add attendees
+        conferenceDataVersion=1       # needed only if you included conferenceData above
+    ).execute()
+
+    print("✅ Event link:", created.get("htmlLink"))
+    print("🆔 Event ID:", created.get("id"))
+    # If you added conferenceData:
+    # print("🔗 Meet:", created.get("hangoutLink"))
