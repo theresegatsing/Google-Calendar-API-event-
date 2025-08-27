@@ -19,7 +19,7 @@ def get_service():
                                                  # 4) If creds exist AND the access token is expired AND we have a refresh token:
             creds.refresh(Request())             #    -> silently get a new access token via the refresh token.
         else:
-            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+            flow = InstalledAppFlow.from_client_secrets_file("C:\Users\gatsi\Box\MY BREATHTAKING PROJECT\Voice Calendar AI\credentials.json", SCOPES)
                                                  # 5) Otherwise, kick off the OAuth flow using your client config...
             creds = flow.run_local_server(port=0)#    ...opens a browser, you sign in & Allow, Google returns fresh tokens.
 
